@@ -1,10 +1,4 @@
 doctorenv
 faiss_index
-src/graph_builder.py
-src/graph_node.py
-src/llm_model.py
-src/question_rewriter.py
-src/rag_generator.py
-src/retrieval_grader.py
-templates
+
 .env

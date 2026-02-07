@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Doctor - Medical UI</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            /* Cyan */
+            --accent: #2563eb;
+            /* Blue */
+            --bg: #f0f9ff;
+            /* Light blue background */
+            --muted: #475569;
+            --card: #ffffff;
+            --border: #dbeafe;
+            --radius: 14px;
+            --shadow: 0 10px 30px rgba(37, 99, 235, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: Inter, system-ui, Arial;
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: linear-gradient(135deg, #e0f2ff 0%, #dbeafe 40%, #bfdbfe 100%);
+            color: #0f172a;
+        }
+
+        body {
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            color: #0f172a
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden
+        }
+
+        /* ---------------- sidebar ---------------- */
+        .sidebar {
+            width: 300px;
+            background: linear-gradient(135deg, #99c8e9, #ffffff);
+            border-right: 1px solid var(--border);
+            padding: 32px 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800
+        }
+
+        .brand h1 {
+            font-size: 16px
+        }
+
+        .menu {
+            margin-top: 18px
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 10px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all .18s
+        }
+
+        .menu-item:hover {
+            background: #f1f7ff;
+            color: var(--primary)
+        }
+
+        .menu-item.active {
+            background: #eef6ff;
+            color: var(--primary);
+            font-weight: 600
+        }
+
+        .menu-item .coming {
+            margin-left: auto;
+            font-size: 11px;
+            padding: 6px 8px;
+            border-radius: 999px;
+            background: #f3f4f6;
+            color: #374151
+        }
+
+        .sidebar-bottom {
+            margin-top: 24px;
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        .sidebar-bottom a {
+            display: block;
+            color: var(--muted);
+            text-decoration: none;
+            margin-bottom: 10px
+        }
+
+        /* ---------------- right panel ---------------- */
+        .right-panel {
+            width: 260px;
+            padding: 28px;
+            background: linear-gradient(135deg, #ffffff, #99c8e9);;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between
+        }
+
+        .auth {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--primary);
+            cursor: pointer;
+            font-weight: 600
+        }
+
+        .btn-login {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            border: none
+        }
+
+        .stats {
+            margin-top: 36px;
+            text-align: right;
+            color: var(--muted)
+        }
+
+        .stats b {
+            font-size: 22px;
+            color: var(--primary);
+            display: block
+        }
+
+        /* ---------------- main content ---------------- */
+        .main {
+            background: linear-gradient(135deg, #d4f1f8, #ffffff);
+            flex: 1;
+            padding: 36px 48px;
+            overflow: auto;
+            max-height: auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px
+        }
+
+        .header .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #eef6ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow)
+        }
+
+        .header h2 {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 18px;
+            color: #0f172a
+        }
+
+        .grid {
+            max-width: 860px;
+            margin: 0 auto
+        }
+
+        .section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+            transition: all .25s;
+            overflow: hidden
+        }
+
+        .section .section-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .section .section-top h3 {
+            font-size: 14px;
+            color: #0f172a
+        }
+
+        .toggle-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: white
+        }
+
+        .pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px
+        }
+
+        .pill {
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: white;
+            color: #0f172a;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px
+        }
+
+        /* collapsible inner content */
+        .collapsible {
+            max-height: 500px;
+            transition: max-height .35s ease, opacity .25s;
+            opacity: 1
+        }
+
+        .collapsible.closed {
+            max-height: 0;
+            opacity: 0
+        }
+
+        /* chat area */
+        .chat-area {
+            max-height: auto;
+            margin-top: 8px
+        }
+
+        .chat-window {
+            background: #f8fbff;
+            border-radius: 12px;
+            padding: 18px;
+            min-height: 600px;
+            max-height: auto;
+            overflow: auto;
+            box-shadow: var(--shadow)
+        }
+
+        .msg {
+            max-width: 72%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            line-height: 1.35;
+            font-size: 14px
+        }
+
+        .msg.bot {
+            align-self: flex-start;
+            padding-left: 3%;
+            padding-top: 1%;
+            padding-bottom: 5%;
+            max-width: 100%;
+        }
+
+        .msg.user {
+            
+            background: rgb(212, 235, 218);
+            color: rgb(0, 0, 0);
+            margin-left: auto;
+            align-self: flex-end
+        }
+
+        /* sticky bottom chat bar */
+        .sticky-chat {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            width: 680px;
+            border-radius: 999px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 12px 36px rgba(2, 6, 23, 0.12)
+        }
+
+        .sticky-chat input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 15px
+        }
+
+        .sticky-chat button {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 700
+        }
+
+        .sticky-chat .start {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-weight: 700
+        }
+
+        /* icons */
+        .icon {
+            width: 18px;
+            height: 18px;
+            display: inline-block
+        }
+
+        /* responsive */
+        @media(max-width:1100px) {
+            .sidebar {
+                width: 88px;
+                padding: 20px
+            }
+
+            .right-panel {
+                display: none
+            }
+
+            .main {
+                padding: 28px
+            }
+
+            .sticky-chat {
+                width: 92%;
+                left: 50%;
+                transform: translateX(-50%)
+            }
+        }
+
+        @media(max-width:700px) {
+            .sidebar {
+                display: none
+            }
+
+            .sticky-chat {
+                width: 96%;
+                left: 2%
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="app">
+        <!-- LEFT -->
+        <aside class="sidebar">
+            <div>
+                <div class="brand">
+                    <div class="logo">AI</div>
+                    <h1>AI Doctor</h1>
+                </div>
+                <div class="menu">
+                    <div class="menu-item active" data-route="visits"><svg class="icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2v20M2 12h20" stroke="#0b57d0" stroke-width="1.6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>Dr. Visits <span class="coming">COMING SOON</span></div>
+                    <div class="menu-item" data-route="plans"><svg class="icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2v20M2 12h20" stroke="#0b57d0" stroke-width="1.6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>Care Plans <span class="coming">COMING SOON</span></div>
+                    <div class="menu-item" data-route="score"><svg class="icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2v20M2 12h20" stroke="#0b57d0" stroke-width="1.6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>Health Score</div>
+                    <div class="menu-item" data-route="chart"><svg class="icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2v20M2 12h20" stroke="#0b57d0" stroke-width="1.6" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>My Chart</div>
+                </div>
+            </div>
+            <div class="sidebar-bottom">
+                <a href="#">Blog</a>
+                <a href="#">Help</a>
+                <a href="#">Developers</a>
+                <a href="#">Employers</a>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="main">
+            <div class="grid">
+                <div class="header">
+                    <div>
+                        <h2>Hi. it's <strong>AI Doctor</strong>. What's on your mind or body today?</h2>
+                    </div>
+                </div>
+
+                <!-- SERVICES -->
+                <section class="section" id="services">
+                    <div class="section-top">
+                        <h3>AI DOCTOR SERVICES</h3>
+                        <div class="toggle-btn" data-target="services-content" aria-expanded="true">−</div>
+                    </div>
+                    <div id="services-content" class="collapsible">
+                        <div class="pills">
+                            <div class="pill">Diagnose an issue</div>
+                            <div class="pill">Ask a question</div>
+                            <div class="pill">Treat me</div>
+                            <div class="pill">Talk Therapy</div>
+                            <div class="pill">Health Score</div>
+                            <div class="pill">Tools</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- <section class="section" id="insights">
+                    <div class="section-top">
+                        <h3>INSIGHTS ABOUT YOU</h3>
+                        <div class="toggle-btn" data-target="insights-content" aria-expanded="false">+</div>
+                    </div>
+                    <div id="insights-content" class="collapsible closed">
+                        <div style="padding-top:12px;color:var(--muted)">Personalized insights will appear here once you
+                            connect health data.</div>
+                    </div>
+                </section> -->
+
+                <!-- <section class="section" id="status">
+                    <div class="section-top">
+                        <h3>DAILY SYSTEM STATUS</h3>
+                        <div class="toggle-btn" data-target="status-content" aria-expanded="false">+</div>
+                    </div>
+                    <div id="status-content" class="collapsible closed">
+                        <div style="padding-top:12px;color:var(--muted)">All systems operational. Last check: <small
+                                style="color:var(--muted)">just now</small></div>
+                    </div>
+                </section> -->
+
+                <!-- CHAT BOX -->
+                <div class="chat-area">
+                    <div class="chat-window" id="chatWindow" role="log" aria-live="polite"></div>
+                </div>
+
+
+            </div>
+        </main>
+
+        <!-- RIGHT -->
+        <aside class="right-panel">
+            <div class="auth"><button class="btn btn-login">Login</button><button class="btn btn-create">Create an
+                    Account</button></div>
+            <div class="stats"><b>1,382,136</b> HUMANS SERVED<br><small style="color:var(--muted)">Excellent 4.8 out of
+                    5 ★</small></div>
+        </aside>
+    </div>
+
+    <!-- STICKY BOTTOM CHAT -->
+    <div class="sticky-chat" id="stickyChat" role="complementary">
+        <div class="start">➕ </div>
+        <input id="stickyInput" placeholder="Start your chat..." aria-label="Type your symptoms" />
+        <button id="sendBtn">Diagnose</button>
+    </div>
+
+    <script>
+        // Utility
+        const el = (sel) => document.querySelector(sel);
+        const els = (sel) => document.querySelectorAll(sel);
+
+        // Collapsible toggles
+        els('.toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = document.getElementById(btn.dataset.target);
+                const expanded = btn.getAttribute('aria-expanded') === 'true';
+                if (expanded) {
+                    btn.innerText = '+'; btn.setAttribute('aria-expanded', 'false'); target.classList.add('closed');
+                } else {
+                    btn.innerText = '−'; btn.setAttribute('aria-expanded', 'true'); target.classList.remove('closed');
+                }
+            });
+        });
+
+        // Chat logic (mocked for demo)
+        const chatWindow = el('#chatWindow');
+        const stickyInput = el('#stickyInput');
+        const sendBtn = el('#sendBtn');
+
+        function formatTime() {
+            const d = new Date();
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        //function appendMessage(role, html) {
+        //    const msg = document.createElement('div');
+        //    msg.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+        //    msg.innerHTML = html + `<div style="font-size:11px;margin-top:8px;color:var(--muted)">${formatTime()}</div>`;
+        //     chatWindow.appendChild(msg);
+        //    chatWindow.scrollTop = chatWindow.scrollHeight;
+        //}
+
+        function appendMessage(role, text) {
+            // Wrapper (icon + bubble side-by-side)
+            const wrapper = document.createElement("div");
+            wrapper.style.display = "flex";
+            wrapper.style.alignItems = "flex-start";
+            wrapper.style.gap = "12px";
+            wrapper.style.marginBottom = "14px";
+            wrapper.style.opacity = "0";
+            wrapper.style.transition = "opacity 0.25s ease-in-out";
+        
+            // Icon (fixed)
+            const icon = document.createElement("div");
+            icon.style.fontSize = "22px";
+            icon.style.marginTop = "2px";
+            icon.textContent = role === "user" ? "👤" : "🤖";
+        
+            // Bubble container (this stays fixed size)
+            const bubble = document.createElement("div");
+            bubble.className = "msg " + (role === "user" ? "user" : "bot");
+        
+            // Inner text (typing happens here)
+            const bubbleText = document.createElement("div");
+            bubble.appendChild(bubbleText);
+        
+            // 🔥 Corrected placement rules
+            if (role === "user") {
+                // User → bubble left, icon right
+                wrapper.appendChild(bubble);
+                wrapper.appendChild(icon);
+            } else {
+                // Bot → icon left, bubble right
+                wrapper.appendChild(icon);
+                wrapper.appendChild(bubble);
+            }
+        
+            chatWindow.appendChild(wrapper);
+        
+            // Fade-in animation
+            setTimeout(() => { wrapper.style.opacity = "1"; }, 10);
+        
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        
+            // Render markdown fully, but reveal gradually
+            const fullHTML = marked.parse(text);
+        
+            let i = 0;
+            const speed = 8; // typing speed
+        
+            function type() {
+                bubbleText.innerHTML = fullHTML.slice(0, i);  // animate ONLY text
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+        
+                if (i <= fullHTML.length) {
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+        
+            type();
+        }
+        
+        
+        
+        
+        
+        
+
+        function escapeHtml(s) { return s.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#039;" })[m]); }
+
+        // function send() {
+        //     const text = stickyInput.value.trim();
+        //     if (!text) return;
+        //     appendMessage('user', escapeHtml(text));
+        //     stickyInput.value = '';
+        //     // simulate thinking
+        //     const thinking = document.createElement('div'); thinking.className = 'msg bot'; thinking.innerHTML = '<em>AI Doctor is analyzing...</em>';
+        //     chatWindow.appendChild(thinking); chatWindow.scrollTop = chatWindow.scrollHeight;
+        //     setTimeout(() => {
+        //         thinking.remove();
+        //         appendMessage('bot', mockRe ply(text));
+        //     }, 800 + Math.random() * 600);
+        // }
+
+        async function send() {
+            const text = stickyInput.value.trim();
+            if (!text) return;
+        
+            // USER message
+            appendMessage("user", escapeHtml(text));
+            stickyInput.value = "";
+        
+            // Temporary thinking bubble
+            const thinking = document.createElement("div");
+            thinking.className = "msg bot";
+            thinking.innerHTML = "<em>AI Doctor is analyzing...</em>";
+            chatWindow.appendChild(thinking);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        
+            try {
+                // Send request to Flask Backend
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: text })
+                });
+        
+                const data = await response.json();
+        
+                thinking.remove();  // remove "analyzing..."
+                
+                // Render markdown + typing effect
+                appendMessage("bot", data.reply);
+        
+            } catch (error) {
+                thinking.remove();
+                appendMessage("bot", "**Error:** Unable to reach server. Please try again.");
+                console.error("Chat API Error:", error);
+            }
+        }
+        
+
+        sendBtn.addEventListener('click', send);
+        stickyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+
+        // Start visit quick actions (expand services on click)
+        el('.sticky-chat .start').addEventListener('click', () => { const services = el('#services .toggle-btn'); if (services) services.click(); el('#services .pills .pill')?.focus(); stickyInput.focus(); });
+
+        // Add pill click behavior to prefill input
+        els('.pill').forEach(p => p.addEventListener('click', () => { stickyInput.value = p.innerText; stickyInput.focus(); }));
+
+        // Menu item click (visual only)
+        els('.menu-item').forEach(mi => mi.addEventListener('click', () => { els('.menu-item').forEach(x => x.classList.remove('active')); mi.classList.add('active'); }));
+
+        // Accessibility: focus visible outline
+        document.addEventListener('keydown', (e) => { if (e.key === 'Tab') document.body.classList.add('show-focus'); });
+
+        
+    </script>
+</body>
+
+</html>
